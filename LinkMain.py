@@ -9,8 +9,10 @@ import csv
 import time
 
 MAX_WAIT_TIME = 30  # Maximale Wartezeit in Sekunden
-NUM_SCROLLS = 5  # Anzahl der Scroll-Durchläufe
+NUM_SCROLLS = 2  # Anzahl der Scroll-Durchläufe
 SLEEP_BETWEEN_SCROLLS = 3  # Zeit zwischen den Scroll-Durchläufen in Sekunden
+CHANNEL_NAME = "@AfDFraktionimBundestag"
+
 
 def init_driver():
     return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
@@ -30,7 +32,11 @@ def extract_video_data(driver):
             video_data.append({"title": title, "link": link})
     return video_data
 
-def write_to_csv(video_data, filename='video_data.csv'):
+def clean_channel_name(channel_name):
+    return channel_name.replace("@", "")  # Entfernt das '@' für den Dateinamen
+
+def write_to_csv(video_data, channel_name):
+    filename = f"{clean_channel_name(channel_name)}_videos.csv"  # Generiert den Dateinamen
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = ['title', 'link']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -40,7 +46,7 @@ def write_to_csv(video_data, filename='video_data.csv'):
 
 def main():
     driver = init_driver()
-    driver.get("https://www.youtube.com/@russellbarkleyphd2023/videos")
+    driver.get(f"https://www.youtube.com/{CHANNEL_NAME}/videos")
 
     try:
         wait = WebDriverWait(driver, MAX_WAIT_TIME)
@@ -50,7 +56,7 @@ def main():
 
         video_data = extract_video_data(driver)
         
-        write_to_csv(video_data)
+        write_to_csv(video_data, CHANNEL_NAME)  # Übergibt CHANNEL_NAME an die Funktion
 
         for data in video_data:
             print(f"Title: {data['title']}, Link: {data['link']}")
@@ -62,3 +68,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
